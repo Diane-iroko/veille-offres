@@ -9,6 +9,9 @@ KEYWORDS = [r"\bsoc\b", r"\bgrc\b", r"\biam\b", r"\bcti\b", r"\bciso\b", r"\brss
             r"threat", r"vuln[ée]rabilit", r"\bcert\b", r"d[ée]tection", r"conformit"]
 EXCLUDE = [r"s[ée]curit[ée] sociale", r"agent de s[ée]curit", r"\bsst\b", r"incendie"]
 
+JOB_URL = r"job|offre|emploi|career|carriere|recrut|poste|position|posting|vacanc|apply"
+NOT_JOB = r"expertise|actualit|blog|news|presse|event|evenement|insight|publication"
+
 INTL = {"Orange Cyberdefense", "Sopra Steria", "Wavestone", "Capgemini", "Accenture",
         "Deloitte", "EY", "PwC jeunes diplômés", "PwC stages", "KPMG", "Atos", "Inetum", "BNP Paribas"}
 FOREIGN = [r"\bwien\b", r"vienna", r"berlin", r"m[uü]nchen", r"munich", r"frankfurt", r"hamburg",
@@ -60,8 +63,9 @@ def fetch(src):
         out = []
         for a in soup.find_all("a", href=True):
             txt = a.get_text(" ", strip=True)
-            if 8 < len(txt) < 150:
-                out.append((txt, urljoin(src["url"], a["href"])))
+            href = urljoin(src["url"], a["href"])
+            if 8 < len(txt) < 150 and re.search(JOB_URL, href.lower()) and not re.search(NOT_JOB, href.lower()):
+                out.append((txt, href))
         return out
     return []
 
@@ -87,7 +91,6 @@ def main():
     for src in SOURCES:
         try:
             items = fetch(src)
-           ## cyber = [(t, u) for t, u in items if is_cyber(t)]
             cyber = [(t, u) for t, u in items if is_cyber(t)
                      and not (src["name"] in INTL and is_foreign(t + " " + u))]
             print(f"{src['name']}: {len(items)} liens, {len(cyber)} cyber")
