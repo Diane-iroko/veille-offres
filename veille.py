@@ -9,6 +9,20 @@ KEYWORDS = [r"\bsoc\b", r"\bgrc\b", r"\biam\b", r"\bcti\b", r"\bciso\b", r"\brss
             r"threat", r"vuln[ée]rabilit", r"\bcert\b", r"d[ée]tection", r"conformit"]
 EXCLUDE = [r"s[ée]curit[ée] sociale", r"agent de s[ée]curit", r"\bsst\b", r"incendie"]
 
+INTL = {"Orange Cyberdefense", "Sopra Steria", "Wavestone", "Capgemini", "Accenture",
+        "Deloitte", "EY", "PwC jeunes diplômés", "PwC stages", "KPMG", "Atos", "Inetum", "BNP Paribas"}
+FOREIGN = [r"\bwien\b", r"vienna", r"berlin", r"m[uü]nchen", r"munich", r"frankfurt", r"hamburg",
+           r"k[oö]ln", r"cologne", r"stuttgart", r"d[uü]sseldorf", r"madrid", r"barcelona", r"milan",
+           r"\brome\b", r"lisbon", r"london", r"dublin", r"amsterdam", r"brussels", r"bruxelles",
+           r"luxembourg", r"warsaw", r"krakow", r"prague", r"bucharest", r"budapest", r"zurich",
+           r"geneva", r"mumbai", r"bangalore", r"pune", r"chennai", r"hyderabad", r"new york",
+           r"toronto", r"casablanca", r"tunis", r"dakar", r"abidjan", r"germany", r"deutschland",
+           r"spain", r"italy", r"india", r"poland", r"\buk\b", r"\busa\b", r"m/w/d", r"m/f/d", r"mfd", r"mwd"]
+
+def is_foreign(text):
+    t = text.lower()
+    return any(re.search(f, t) for f in FOREIGN)
+
 SOURCES = [
     {"name": "Synetis", "type": "html", "url": "https://www.synetis.com/carriere/offres-emplois/"},
     {"name": "Almond", "type": "html", "url": "https://careers.almond.eu/jobs"},
@@ -73,7 +87,9 @@ def main():
     for src in SOURCES:
         try:
             items = fetch(src)
-            cyber = [(t, u) for t, u in items if is_cyber(t)]
+           ## cyber = [(t, u) for t, u in items if is_cyber(t)]
+            cyber = [(t, u) for t, u in items if is_cyber(t)
+                     and not (src["name"] in INTL and is_foreign(t + " " + u))]
             print(f"{src['name']}: {len(items)} liens, {len(cyber)} cyber")
             for title, url in cyber:
                 if url not in seen:
